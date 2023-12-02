@@ -37,12 +37,16 @@ frontend www-http
     mode http
     default_backend web-backend
 frontend www-https
-    bind *:443 ssl crt /etc/haproxy/www.realayen.tech.pem
+    bind *:443 ssl crt /etc/letsencrypt/live/www.realayen.tech
     http-request set-header X-Forwarded-Proto https
+    acl letsencrypt-acl path_beg /.well-known/acme-challenge/
+    use_backend letsencrypt-backend if letsencrypt-acl
     default_backend web-backend
 
 backend web-backend
     redirect scheme https unless { ssl_fc }
     balance roundrobin
-    server 5432-web-01 52.90.228.194
-    server 5432-web-02 52.90.171.62
+    server 5432-web-0152.90.228.194:80 check
+    server 5432-web-02 52.90.171.62:80 check
+backend letsencrypt-backend
+   server letsencrypt 3.90.190.115
